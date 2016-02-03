@@ -11,5 +11,5 @@ youtube.key = DEVELOPER_KEY
 videos = youtube.list_searches(:snippet, max_results: 3, q: search_term)
 
 videos.items.each do |video|
-  p video.to_h[:snippet][:title]
+  p "#{video.to_h[:snippet][:title]} - http://youtube.com/watch?v=#{video.to_h[:id][:video_id]}"
 end
