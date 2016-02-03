@@ -1,13 +1,14 @@
 require_relative "blackjack"
 DECK = Deck.new
 class Player
-  attr_accessor :hand
+  attr_accessor :hand, :staying
 
   def initialize
     @hand = Hand.new
     2.times do
       @hand.cards << DECK.deal_card
     end
+    @staying = false
     evaluate_hand
   end
 
@@ -44,7 +45,7 @@ class Player
   end
 
   def stay
-    @hand.total_value
+    @staying = true
   end
 end
 
@@ -54,12 +55,18 @@ class Dealer < Player
     super
   end
 
-  def show_hand
+  def show_hand(game_over = false)
     puts "Dealer's hand:"
     @hand.cards.each do |card|
-      puts "#{card.name} of #{card.suite}"
+      unless card == @hand.cards.first
+        puts "#{card.name} of #{card.suite}"
+      end
     end
-    puts "#{hand.total_value}"
+    if game_over
+      puts "#{hand.total_value}"
+    else
+      puts "#{hand.total_value - hand.cards[0].value}"
+    end
   end
 
   def evaluate_hand
@@ -71,18 +78,22 @@ class Dealer < Player
       false
     end
   end
+
+  def hit
+    new_card = DECK.deal_card
+    puts "Dealer got the #{new_card.name} of #{new_card.suite}"
+    @hand.cards << new_card
+  end
 end
 
 class Game
-  attr_accessor :player, :dealer, :game_over
+  attr_accessor :player, :dealer, :game_over, :winner
   def initialize
     @player = Player.new
     @dealer = Dealer.new
-    if @player.evaluate_hand || @dealer.evaluate_hand
-      @game_over = true
-    else
-      @game_over = false
-    end
+    @game_over = false
+    @winner = nil
+    judge_game
   end
 
   def play
@@ -90,27 +101,69 @@ class Game
     until @game_over
       @player.show_hand
       @dealer.show_hand
-      puts "hit, or stay, or quit?"
+      if @player.staying && @dealer.staying
+        compare_hands
+        @game_over = true
+      elsif @player.staying
+        get_dealer_action
+        judge_game
+      else
+        get_player_action
+        judge_game
+        get_dealer_action
+        judge_game
+      end
+    end
+    @player.show_hand
+    @dealer.show_hand(true)
+    if @winner == @player
+      puts "You win!"
+    elsif @winner == @dealer
+      puts "You lose! Better luck next time."
+    else
+      puts "Come back soon!"
+    end
+  end
+
+  def get_player_action
+    puts "hit, or stay, or quit?"
       player_action = gets.chomp!
       case player_action
       when "hit"
         @player.hit
-        judge_hand(@player)
       when "stay"
         @player.stay
       when "quit"
         @game_over = true
       else
-        puts "I don't understand"
-        player_action = gets.chomp!
+        puts "I don't understand."
+        get_player_action
       end
+  end
+
+  def get_dealer_action
+    if @dealer.hand.total_value < 17
+      @dealer.hit
+    elsif @dealer.hand.total_value < 21
+      @dealer.stay
     end
   end
 
-
-  def judge_hand(player)
-    if player.evaluate_hand == true || player.evaluate_hand == false
+  def judge_game
+    if @player.blackjack? || @dealer.bust?
+      @winner = @player
       @game_over = true
+    elsif @player.bust? || @dealer.blackjack?
+      @winner = @dealer
+      @game_over = true
+    end
+  end
+
+  def compare_hands
+    if @player.hand.total_value > @dealer.hand.total_value
+      @winner = @player
+    elsif @player.hand.total_value <= @dealer.hand.total_value
+      @winner = @dealer
     end
   end
 end

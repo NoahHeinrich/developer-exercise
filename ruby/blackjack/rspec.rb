@@ -107,3 +107,9 @@ describe Player do
     end
   end
 end
+
+describe Game do
+  before(:each) do
+    @game = Game.new
+  end
+end
