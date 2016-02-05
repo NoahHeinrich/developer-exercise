@@ -49,11 +49,11 @@ $(function(){
 
     render: function () {
       var page = this.collection.getFirstPage();
-      console.log(page)
       this.$el.html(this.template({ quotes: page.models }));
       return this;
     },
     handleSuccess: function () {
+      console.log(this.collection)
       this.render();
     },
 
@@ -64,7 +64,33 @@ $(function(){
 
   })
 
+  var PaginatorView = Backbone.View.extend({
+    el: ".pages",
+    template: _.template("<a id='first' href=#> << </a> "
+                        + " <a id='back' href=#> < </a>"
+                        + " <a id='forward' href=#> > </a>"
+                        + " <a id= 'last' href=#> >> </a>"),
+    initialize: function () {
+      this.listenTo(this.collection, 'successOnFetch', this.handleSuccess);
+      this.listenTo(this.collection, 'errorOnFetch', this.handleError);
+    },
+
+    render: function () {
+      this.$el.html(this.template());
+      return this;
+    },
+
+    handleSuccess: function () {
+      this.render();
+    },
+
+    handleError: function () {
+      alert("Something went wrong")
+    },
+  })
+
   var quotes = new QuoteList([], { mode: "client" });
   var quoteView = new QuoteView({ collection: quotes });
+  var pagesView = new PaginatorView({ collection: quotes });
   quotes.getResults();
 });
