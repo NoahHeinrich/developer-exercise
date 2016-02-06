@@ -1,0 +1,11 @@
+.accordion-header {
+  max-width: 40%;
+  border: 3px groove grey;
+  border-radius: 2px;
+  margin-bottom: 5px;
+  padding: 5px;
+}
+.accordion-body {
+  display: none;
+  border-top: 1px dotted black;
+}
