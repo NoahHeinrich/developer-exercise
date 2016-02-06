@@ -108,8 +108,112 @@ describe Player do
   end
 end
 
+describe Dealer do
+  before(:each) do
+    @dealer = Dealer.new
+  end
+
+  describe "#get_action" do
+    it "hits if card total is less than 17" do
+      card1 = Card.new(:spades, :ten, 10)
+      card2 = Card.new(:spades, :five, 5)
+      expect(@dealer).to receive(:hit)
+      @dealer.hand.cards = [card1, card2]
+      @dealer.get_action
+    end
+
+    it "stays if card total is greater than or equal 17" do
+      card1 = Card.new(:spades, :ten, 10)
+      card2 = Card.new(:spades, :five, 7)
+      expect(@dealer).to receive(:stay)
+      @dealer.hand.cards = [card1, card2]
+      @dealer.get_action
+    end
+  end
+
+end
+
 describe Game do
   before(:each) do
     @game = Game.new
+  end
+
+  describe "#new" do
+    it "should be initialized with a player" do
+      expect(@game.player).to be_a Player
+    end
+
+    it "should be initialized with a Dealer" do
+      expect(@game.dealer).to be_a Dealer
+    end
+  end
+
+  describe "#judge_game" do
+    it "should set player as winner if player has blackjack" do
+      card1 = Card.new(:spades, :jack, 10)
+      card2 = Card.new(:spades, :ace, 11)
+      @game.player.hand.cards = [card1, card2]
+      @game.judge_game
+      expect(@game.winner).to be @game.player
+    end
+
+    it "should mark the game as over" do
+      card1 = Card.new(:spades, :jack, 10)
+      card2 = Card.new(:spades, :ace, 11)
+      @game.player.hand.cards = [card1, card2]
+      @game.judge_game
+      expect(@game.game_over).to be true
+    end
+
+    it "should set player as winner if dealer busts" do
+      card1 = Card.new(:spades, :jack, 10)
+      card2 = Card.new(:spades, :ten, 10)
+      card3 = Card.new(:spades, :five, 5)
+      @game.dealer.hand.cards = [card1, card2, card3]
+      @game.judge_game
+      expect(@game.winner).to be @game.player
+    end
+
+    it "should set dealer as winner if player busts" do
+      card1 = Card.new(:spades, :jack, 10)
+      card2 = Card.new(:spades, :ten, 10)
+      card3 = Card.new(:spades, :five, 5)
+      @game.player.hand.cards = [card1, card2, card3]
+      @game.judge_game
+      expect(@game.winner).to be @game.dealer
+    end
+
+    it "should set dealer as winner if dealer has blackjack" do
+      card1 = Card.new(:spades, :jack, 10)
+      card2 = Card.new(:spades, :ace, 11)
+      @game.dealer.hand.cards = [card1, card2]
+      @game.judge_game
+      expect(@game.winner).to be @game.dealer
+    end
+  end
+
+  describe "#compare_hands" do
+    it "should set player as winner if player
+    s hand exceeds dealers" do
+      card1 = Card.new(:spades, :jack, 10)
+      card2 = Card.new(:spades, :ace, 11)
+      card3 = Card.new(:spades, :queen, 10)
+      card4 = Card.new(:spades, :nine, 9)
+      @game.player.hand.cards = [card1, card2]
+      @game.dealer.hand.cards = [card3, card4]
+      @game.compare_hands
+      expect(@game.winner).to be @game.player
+    end
+    it "should set dealer as winner if dealer
+    s hand exceeds players" do
+      card1 = Card.new(:spades, :jack, 10)
+      card2 = Card.new(:spades, :ace, 11)
+      card3 = Card.new(:spades, :queen, 10)
+      card4 = Card.new(:spades, :nine, 9)
+      @game.dealer.hand.cards = [card1, card2]
+      @game.player.hand.cards = [card3, card4]
+      @game.compare_hands
+      expect(@game.winner).to be @game.dealer
+    end
   end
 end

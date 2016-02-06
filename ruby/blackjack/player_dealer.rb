@@ -77,6 +77,14 @@ class Dealer < Player
       puts "Dealer busts, you win."
       false
     end
+
+    def get_action
+      if @hand.total_value < 17
+        hit
+      elsif @hand.total_value < 21
+        stay
+      end
+    end
   end
 
   def hit
@@ -105,12 +113,12 @@ class Game
         compare_hands
         @game_over = true
       elsif @player.staying
-        get_dealer_action
+        @dealer.get_action
         judge_game
       else
         get_player_action
         judge_game
-        get_dealer_action
+        @dealer.get_action
         judge_game
       end
     end
@@ -127,8 +135,8 @@ class Game
 
   def get_player_action
     puts "hit, or stay, or quit?"
-      player_action = gets.chomp!
-      case player_action
+    player_action = gets.chomp!
+    case player_action
       when "hit"
         @player.hit
       when "stay"
@@ -138,14 +146,6 @@ class Game
       else
         puts "I don't understand."
         get_player_action
-      end
-  end
-
-  def get_dealer_action
-    if @dealer.hand.total_value < 17
-      @dealer.hit
-    elsif @dealer.hand.total_value < 21
-      @dealer.stay
     end
   end
 
